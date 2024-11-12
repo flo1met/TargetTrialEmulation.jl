@@ -4,7 +4,7 @@ module TargetTrialEmulation
 using DataFrames
 using Arrow
 using GLM
-using StatsModel
+using StatsModels
 using Distributions
 
 
