@@ -1,5 +1,4 @@
-#### seqtrial: set up treatment arms of sequential target trial
-# confounders fixed to baseline values
+#### seqtrial_tv: keeps time varying confounders time varying
 
 #### necessary packages
 # Arrow, DataFrames,
@@ -8,7 +7,7 @@
 ## todo: integrate censoring function before making final df
 ## todo: assigned treatment variable
 
-function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
+function seqtrial(df::DataFrame)
     # Emulate Target Trials
     trials_dict = Dict{Int64, DataFrame}() # Create dict to save DFs
     
@@ -37,12 +36,7 @@ function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
             if group.treatment[1] == 1
                 group.baseline_treatment .= 1
             end
-
-            # fix covariates to baseline values
-            for cov in covariates
-                group[!, cov] .= group[1, cov] 
-            end
-        end
+        end  
 
         trials_dict[i] = trial_tmp
     end
