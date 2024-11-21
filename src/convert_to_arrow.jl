@@ -2,6 +2,8 @@
 ## convertes a DataFrame to an Arrow Table
 ### sorts DF before, for loop to work correctly
 
+# TODO: dont saver and load, convert df to arrow table
+
 function convert_to_arrow(df::DataFrame)
     sort!(df, :period) # bring period in right order for loop
 

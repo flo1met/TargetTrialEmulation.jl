@@ -8,6 +8,14 @@
 ## todo: integrate censoring function before making final df
 ## todo: assigned treatment variable
 
+## todo: i -> period_id
+## todo: check if when fixing baseline cov, is it copying data? should we create 2 objects, time-fixed voc and time-varying cov
+## todo: add trialnr column when stacking dicts to df
+## todo: at the beginning, select only variables that are used to keep in DF, to safe memory space
+## todo: rounding of covariates
+## todo: categorical variables, check if they are copied correctly
+
+
 function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
     # Emulate Target Trials
     trials_dict = Dict{Int64, DataFrame}() # Create dict to save DFs

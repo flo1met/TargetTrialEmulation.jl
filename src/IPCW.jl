@@ -6,7 +6,7 @@
 ## todo: make it a ! function
 ## generalize formula creation
 
-function IPCW(df::DataFrame, covariates::Array{Symbol,1})
+function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = false)
     # initialise IPW column
     df[!, :IPCW] = ones(Float64, nrow(df))
 
@@ -36,5 +36,9 @@ function IPCW(df::DataFrame, covariates::Array{Symbol,1})
     #model_denom = nothing
     
     # return weighting models and df
-    return df, model_num, model_denom
+    if save_w_model == true
+        return df, model_num, model_denom
+    else
+        return df
+    end
 end
