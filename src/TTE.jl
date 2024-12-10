@@ -20,7 +20,7 @@ function TTE(df::DataFrame;
 
     # apply weighting
     if save_w_model == true
-        df, model_num, model_denom = IPCW(df, covariates)
+        df, model_num, model_denom = IPCW(df, covariates, save_w_model)
     else
         df = IPCW(df, covariates)
     end
@@ -43,6 +43,10 @@ function TTE(df::DataFrame;
     #            :period => period, 
     #            :eligible => eligible)
 
-    return df, out_model
+    if save_w_model == true
+        return df, out_model, model_num, model_denom
+    else
+        return df, out_model
+    end
 end
 

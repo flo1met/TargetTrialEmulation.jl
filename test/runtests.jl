@@ -1,3 +1,8 @@
+## todo: change rda to text file
+## todo: are types of variabkes being contained
+## todo: minimal df to test?
+
+
 using TargetTrialEmulation
 using Test
 using DataFrames

@@ -5,13 +5,16 @@
 
 ## todo: make it a ! function
 ## generalize formula creation
+## filtering for eligible subjects: simmerschool yes, trialEMulation no: what to do, option?
 
 function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = false)
     # initialise IPW column
     df[!, :IPCW] = ones(Float64, nrow(df))
 
-    df_eligible = filter(row -> row.eligible == 1, df)
-    df_eligible = filter(row -> row.outcome == 0, df)
+    # filter/dont filter for eligible subjects
+    #df_eligible = filter(row -> row.eligible == 1, df)
+    #df_eligible = filter(row -> row.outcome == 0, df)
+    df_eligible = df
 
     # create formula string
     formula_string_d = "censored == 0 ~ $(join(covariates, " + ")) + period + (period^2)"
