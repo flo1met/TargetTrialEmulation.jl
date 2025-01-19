@@ -20,6 +20,6 @@ Pkg.add(url="https://github.com/flo1met/TargetTrialEmulation.jl")
 ```
 
 ## Citation
-The citation for this package can be found in the [CITATION.bib](CITATION.cff) file within this repository.
+The citation for this package can be found in the [CITATION.cff](CITATION.cff) file within this repository.
 
 
