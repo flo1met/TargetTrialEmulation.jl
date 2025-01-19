@@ -4,10 +4,10 @@
 
 # TODO: add citation.bib
 
-This package provides a interface to perform sequential target trial emulation in the Julia programming language.
+This package provides an interface to perform sequential target trial emulation in the Julia programming language.
 
 ## Installation
-As this package is not yet registered, you can install it by running the following command in the Julia REPL:
+As this package is not yet registered in the Julia package repository, you can install it by running the following command in the Julia REPL:
 ```julia
 using Pkg
 Pkg.add(url="https://github.com/flo1met/TargetTrialEmulation.jl")
