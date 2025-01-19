@@ -2,7 +2,8 @@
 
 [![Build Status](https://github.com/flo1met/TargetTrialEmulation.jl/workflows/CI/badge.svg)](https://github.com/flo1met/TargetTrialEmulation.jl/actions)
 
-# TODO: add citation.bib
+
+!NOTE: This is a pre-release! Full functionality is not guaranteed and the package is still under development.
 
 This package provides an interface to perform sequential target trial emulation in the Julia programming language.
 
