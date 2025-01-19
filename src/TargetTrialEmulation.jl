@@ -1,5 +1,12 @@
 module TargetTrialEmulation
 
+"""
+    TargetTrialEmulation.jl
+
+A Julia package for performing target trial emulation. Provides tools for sequential target trial emulation,
+inverse propensity weighting, artificial censoring, and more.
+"""
+
 # depenencies
 using DataFrames
 using Arrow

@@ -1,4 +1,41 @@
+"""
+    TTE(df::DataFrame, outcome::Symbol, treatment::Symbol, period::Symbol, eligible::Symbol, censored::Symbol, covariates::Array{Symbol,1}, save_w_model::Bool = false)
+
+This function emulates target trials using the sequential trial emulation method.
+
+# Keyword Arguments
+- `outcome::Symbol`: Outcome column.
+- `treatment::Symbol`: Treatment column.
+- `period::Symbol`: Period column.
+- `eligible::Symbol`: Eligible column.
+- `censored::Symbol`: Censored column.
+- `covariates::Array{Symbol,1}`: Array of covariates (that are in the DataFrame) to be fixed to baseline values.
+- `save_w_model::Bool`: Indicator if the weighting model should be saved.
+
+# Output
+
+- `df`: DataFrame with the following columns:
+    - `:id`: ID of the patient.
+    - `:period`: Timepoint of the observation.
+    - `:eligible`: Indicator if patient is eligible.
+    - `:treatment`: Indicator if patient is treated.
+    - `:trialnr`: Trial number.
+    - `:fup`: Follow-up time.
+    - `:baseline_treatment`: Indicator if patient is treated at baseline.
+    - `covariates`: Covariates fixed to baseline values.
+- `out_model`: Outcome model.
+- `model_num`: Numerator model (only if `save_w_model` is `true`).
+- `model_denom`: Denominator model (only if `save_w_model` is `true`).
+
+# Example
+
+"""
+
 #### TTE: Target Trial Emulation wrapper function
+
+## TODO
+# - add example (when the function is ready and example DF is created)
+
 
 function TTE(df::DataFrame;
     outcome::Symbol,

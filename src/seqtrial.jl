@@ -1,3 +1,40 @@
+"""
+    seqtrial(df::DataFrame, covariates::Array{Symbol,1})
+
+Set up treatment arms of sequential target trial.
+Confounders are fixed to baseline values.
+
+# Keyword Arguments
+
+- `df::DataFrame`: DataFrame with columns `:id`, `:period`, `:eligible`, `:treatment`.
+- `covariates::Array{Symbol,1}`: Array of covariates (that are in the DataFrame) to be fixed to baseline values.
+
+# Output
+
+- `trials_dict`: Dict with keys as period numbers and values as DataFrames with the following columns:
+    - `:id`: ID of the patient.
+    - `:period`: Timepoint of the observation.
+    - `:eligible`: Indicator if patient is eligible.
+    - `:treatment`: Indicator if patient is treated.
+    - `:trialnr`: Trial number.
+    - `:fup`: Follow-up time.
+    - `:baseline_treatment`: Indicator if patient is treated at baseline.
+    - `covariates`: Covariates fixed to baseline values.
+
+# Example
+
+```julia
+using DataFrames
+df = DataFrame(id = [1, 1, 2, 2, 3, 3, 4, 4],
+               period = [1, 2, 1, 2, 1, 2, 1, 2],
+               eligible = [1, 1, 1, 1, 1, 1, 1, 1],
+               treatment = [0, 1, 0, 1, 0, 1, 0, 1],
+               age = [20, 20, 30, 30, 40, 40, 50, 50])
+covariates = [:age]
+trials_dict = seqtrial(df, covariates)
+```
+"""
+
 #### seqtrial: set up treatment arms of sequential target trial
 # confounders fixed to baseline values
 

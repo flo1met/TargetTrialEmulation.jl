@@ -1,3 +1,37 @@
+"""
+    art_censor(dict::Dict{Int64, DataFrame})
+
+Artificially censor individuals who deviate from the treatment.
+
+# Keyword Arguments
+
+- `dict::Dict{Int64, DataFrame}`: Dictionary with keys as period numbers and values as DataFrames with the following columns:
+    - `:id`: ID of the patient.
+    - `:period`: Timepoint of the observation.
+    - `:eligible`: Indicator if patient is eligible.
+    - `:treatment`: Indicator if patient is treated.
+    - `:trialnr`: Trial number.
+    - `:fup`: Follow-up time.
+    - `:baseline_treatment`: Indicator if patient is treated at baseline.
+    - `covariates`: Covariates fixed to baseline values.
+
+# Output
+
+- `dict`: Dictionary with keys as period numbers and values as DataFrames with the following columns:
+    - `:id`: ID of the patient.
+    - `:period`: Timepoint of the observation.
+    - `:eligible`: Indicator if patient is eligible.
+    - `:treatment`: Indicator if patient is treated.
+    - `:trialnr`: Trial number.
+    - `:fup`: Follow-up time.
+    - `:baseline_treatment`: Indicator if patient is treated at baseline.
+    - `covariates`: Covariates fixed to baseline values.
+    - `censor`: Indicator if patient is censored.
+
+# Example
+
+"""
+
 #### art_censor: artificially censor, censoring function (censor individuals who deviate from the treatment)
 
 # necessary packages:
@@ -5,6 +39,7 @@
 
 ## todo: make it a ! function
 ## todo: optimize, profile
+## - add example (when the function is ready and example DF is created)
 
 function art_censor(dict::Dict{Int64, DataFrame})
     for key in keys(dict)

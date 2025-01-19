@@ -1,4 +1,4 @@
-#### IPCW: stabilised inverse probability of censor weighting to adjust for ____ bias introduced by censoring
+#### IPCW: stabilised inverse probability of censor weighting to adjust for bias introduced by censoring
 
 # necessary packages:
 # GLM, StatsModels, DataFrames, Distributions
