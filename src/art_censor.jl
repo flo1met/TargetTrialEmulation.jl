@@ -1,3 +1,12 @@
+#### art_censor: artificially censor, censoring function (censor individuals who deviate from the treatment)
+
+# necessary packages:
+# DataFrames
+
+## todo: make it a ! function
+## todo: optimize, profile
+## - add example (when the function is ready and example DF is created)
+
 """
     art_censor(dict::Dict{Int64, DataFrame})
 
@@ -31,16 +40,6 @@ Artificially censor individuals who deviate from the treatment.
 # Example
 
 """
-
-#### art_censor: artificially censor, censoring function (censor individuals who deviate from the treatment)
-
-# necessary packages:
-# DataFrames
-
-## todo: make it a ! function
-## todo: optimize, profile
-## - add example (when the function is ready and example DF is created)
-
 function art_censor(dict::Dict{Int64, DataFrame})
     for key in keys(dict)
         df = dict[key]

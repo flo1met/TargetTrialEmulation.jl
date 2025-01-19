@@ -1,3 +1,9 @@
+"""
+    convert_to_arrow(df::DataFrame)
+
+Convertes a DataFrame to an Arrow Table
+"""
+
 #### convert_to_arrow
 ## convertes a DataFrame to an Arrow Table
 ### sorts DF before, for loop to work correctly

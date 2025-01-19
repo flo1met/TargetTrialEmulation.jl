@@ -1,7 +1,12 @@
+#### TTE: Target Trial Emulation wrapper function
+
+## TODO
+# - add example (when the function is ready and example DF is created)
+
 """
     TTE(df::DataFrame, outcome::Symbol, treatment::Symbol, period::Symbol, eligible::Symbol, censored::Symbol, covariates::Array{Symbol,1}, save_w_model::Bool = false)
 
-This function emulates target trials using the sequential trial emulation method.
+This is a wrapper function to emulates target trials using the sequential trial emulation method.
 
 # Keyword Arguments
 - `outcome::Symbol`: Outcome column.
@@ -30,13 +35,6 @@ This function emulates target trials using the sequential trial emulation method
 # Example
 
 """
-
-#### TTE: Target Trial Emulation wrapper function
-
-## TODO
-# - add example (when the function is ready and example DF is created)
-
-
 function TTE(df::DataFrame;
     outcome::Symbol,
     treatment::Symbol,
