@@ -66,7 +66,7 @@ function art_censor(dict::Dict{Int64, DataFrame})
                     first_censor = findfirst(censored_group.censor .== 1)
                     
                     # If a censor is found, keep rows up to the first censored row
-                    if first_censor != nothing
+                    if !isnothing(first_censor)
                         censored_group = censored_group[1:first_censor, :]
                     end
                     break # Stop further checks in this group since we censored it

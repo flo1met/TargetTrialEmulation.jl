@@ -19,7 +19,7 @@ function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = f
     # create formula string
     formula_string_d = "censored == 0 ~ $(join(covariates, " + ")) + period + (period^2)"
 
-    # create model
+    # fit model
     model_num = glm(@formula(censored == 0 ~ period + (period^2)), df_eligible, Binomial(), LogitLink())
     model_denom = glm(eval(Meta.parse("@formula $formula_string_d")), df_eligible, Binomial(), LogitLink())
     

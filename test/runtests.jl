@@ -1,5 +1,5 @@
 ## todo: change rda to text file
-## todo: are types of variabkes being contained
+## todo: !!are types of variables being contained!!
 ## todo: minimal df to test?
 
 
@@ -13,7 +13,7 @@ using GLM
 
 test_df = CSV.read("../data/seq_emulated_data_censored.csv", DataFrame)
 df = RData.load("../data/data_censored.rda")["data_censored"]
-out_df = dict_to_df(seqtrial(df, [:x1, :x2, :x3, :x4, :age]))
+out_df = seqtrial(df, [:x1, :x2, :x3, :x4, :age])
 
 #sort the dfs
 out_df = sort(out_df, [:id, :trialnr])

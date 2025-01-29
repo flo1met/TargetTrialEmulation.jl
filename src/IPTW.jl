@@ -15,7 +15,7 @@ function IPTW(df::DataFrame, covariates::Array{Symbol,1})
     # create formula string
     formula_string_d = "treatment ~ $(join(covariates, " + ")) + period + (period^2)"
 
-    # create model
+    # fit model
     model_num = glm(@formula(treatment ~ period + (period^2)), df_eligible, Binomial(), LogitLink())
     model_denom = glm(eval(Meta.parse("@formula $formula_string_d")), df_eligible, Binomial(), LogitLink())
     

@@ -2,7 +2,7 @@
 # confounders fixed to baseline values
 
 #### necessary packages
-# Arrow, DataFrames,
+# Arrow, DataFrames, CategoricalArrays
 
 ## todo: make it a ! function
 ## todo: integrate censoring function before making final df
@@ -52,6 +52,14 @@ trials_dict = seqtrial(df, covariates)
 ```
 """
 function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
+    # Check if covariate is categorical, if yes save name
+    #cat_name = []
+    #for cov_cat in covariates
+    #    if isa(df[!, cov_cat], CategoricalArray)
+    #        push!(cat_name, cov_cat)
+    #    end
+    #end
+
     # Emulate Target Trials
     trials_dict = Dict{Int64, DataFrame}() # Create dict to save DFs
     
@@ -69,26 +77,31 @@ function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
 
         start_time = minimum(trial_tmp[!, :period]) # get start time
         trial_tmp[!, :fup] .= trial_tmp.period .- start_time # add follow-up-time
-        #transform!(groupby(trial_tmp, :id), eachindex => :fup) # add follow-up-time
 
         sort!(trial_tmp, [:id, :period]) # sort for treatment assignment
 
-        # add indicator for baseline treatment assignment by id
-        trial_tmp[!, :baseline_treatment] .= 0
-        grouped_df = groupby(trial_tmp, :id)
-        for group in grouped_df
-            if group.treatment[1] == 1
-                group.baseline_treatment .= 1
-            end
+        # Add indicator for baseline treatment assignment and baseline covariates by id
 
-            # fix covariates to baseline values
-            for cov in covariates
-                group[!, cov] .= group[1, cov] 
-            end
-        end
+        grouped_df = groupby(trial_tmp, :id)
+
+        covtreat = vcat(covariates, :treatment) # add treatment to covariates
+
+        transform!(grouped_df, covtreat .=> first)
 
         trials_dict[i] = trial_tmp
     end
+
+    # combine all dicts to one DF
+    trials_dict = vcat(values(trials_dict)...) # combine all DFs in dict
+
+    # convert categorical variables back to categorical
+    #cat_name = [ "$(cov)_first" for cov in cat_name ] # add _first to each covariate
+    #if !isempty(cat_name)
+    #    for cov_cat in cat_name
+    #        trials_dict[!, cov_cat] = CategoricalArray(trials_dict[!, cov_cat])
+    #    end
+    #end
+
     return trials_dict
 end
 

@@ -12,3 +12,9 @@ seqtrial
 TTE
 art_censor
 ```
+
+# Vignette
+
+```@contents
+Pages = ["man/getting_started.md"]
+```

@@ -21,22 +21,47 @@ using Pkg
 Pkg.add(url="https://github.com/flo1met/TargetTrialEmulation.jl")
 ```
 
-## Load the data
-
-```julia
-data = 
-```
-
-## 
+## Load Packages
 
 ```julia
 using TargetTrialEmulation
 using DataFrames
+using CSV
+using CategoricalArrays
 ```
+
+## Load the data and recode categorical variables
 
 ```julia
-data_dict = seqtrial(data, [:id, :time, :treatment, :outcome, :censor, :eligible])
-
+data = CSV.read("data/trial_example.csv", DataFrame)
+data[!, :catvarA] = CategoricalArray(data.catvarA)
+data[!, :catvarB] = CategoricalArray(data.catvarB)
 ```
+## Perform sequential Target Trial Emulation
+
+To perform sequential Target Trial Emulation we can use the wrapper function `TTE`. 
+```julia
+df_out, model = TTE(data, 
+    outcome = :outcome, 
+    treatment = :treatment, 
+    period = :period, 
+    eligible = :eligible, 
+    ipcw = false,
+    covariates = [:catvarA, :catvarB, :nvarA, :nvarB, :nvarC])
+```
+
+As an output we get the extended dataframe `df_out` and the fitted model `model`.
+We can inspect the dimensions of the output dataframe.
+```julia
+size(df_out)
+```
+
+The resulting model is the following:
+```julia
+model
+```
+
+
+
 
 

@@ -13,6 +13,7 @@ using Arrow
 using GLM
 using StatsModels
 using Distributions
+using CategoricalArrays
 
 
 # export
