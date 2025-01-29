@@ -27,7 +27,8 @@ function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = f
     prd_denom = predict(model_denom, df)
 
     # calculate inverse propensity weights with ifelse
-    df[!, :IPCW] .= Float64.(ifelse.(df.censored .== 0, (prd_num ./ prd_denom), 0))
+    #df[!, :IPCW] .= Float64.(ifelse.(df.censored .== 0, (prd_num ./ prd_denom), 0))
+    df[!, :IPCW] .= (prd_num ./ prd_denom)
 
     # truncate weights at 99th percentile
     #df[!, :IPW] = ifelse.(df.IPW .> quantile(df.IPW, 0.99), quantile(df.IPW, 0.99), df.IPW)

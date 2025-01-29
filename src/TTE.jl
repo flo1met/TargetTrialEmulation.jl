@@ -109,6 +109,8 @@ function TTE(df::DataFrame;
     #end
 
     if ipcw == true
+        # set IPCW to 1 if fup == 0
+        df[!, :IPCW] = ifelse.(df.fup .== 0, 1.0, df.IPCW)
         df = combine(groupby(df, [:id, :trialnr]), All(), :IPCW => (x -> cumprod(x)) => :IPCW)
     end
     
