@@ -46,7 +46,18 @@ m_test = glm(@formula(outcome ~ x1 + x2 + x3 + x4 + age + assigned_treatment + f
     @test isapprox(coef(m_out), coef(m_test), atol = 0.0001)
 end
 
+
+##  seqtrial
+## IPCW
+## integration test
+
+
+### create seperate test file
 # test censoring models
+
+## test agaisnt weight vector
+df_out, model_num, model_denom = IPCW(df, [:x1, :x2, :x3, :x4, :age], true)
+
 df_out, model, model_num, model_denom = TTE(df, 
     outcome = :outcome, 
     treatment = :treatment, 
@@ -58,7 +69,12 @@ df_out, model, model_num, model_denom = TTE(df,
     save_w_model = true
     )
 
+
+
+    #### stays here
 ## test if variable types are contained when running the function
+## define colum types in the begining of the test
+## copy x3 as num and treat as num 
 @testset "Variable Type" begin
     @test typeof(df_out.x1_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
     @test typeof(df_out.x2) == Vector{Float64}

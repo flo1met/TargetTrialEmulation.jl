@@ -32,12 +32,6 @@ function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = f
 
     # truncate weights at 99th percentile
     #df[!, :IPW] = ifelse.(df.IPW .> quantile(df.IPW, 0.99), quantile(df.IPW, 0.99), df.IPW)
-
-    # delete models and weights
-    prd_num = nothing
-    prd_denom = nothing
-    #model_num = nothing
-    #model_denom = nothing
     
     # return weighting models and df
     if save_w_model == true

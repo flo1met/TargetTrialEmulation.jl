@@ -14,6 +14,7 @@ using GLM
 using StatsModels
 using Distributions
 using CategoricalArrays
+using StatsBase
 
 
 # export
@@ -24,7 +25,9 @@ export  art_censor,
         IPTW,
         ITT,
         seqtrial,
-        TTE
+        TTE,
+        bootstrap_patients,
+        MRD_hat
 
 # include
 include("art_censor.jl")
@@ -35,5 +38,7 @@ include("IPTW.jl")
 include("ITT.jl")
 include("seqtrial.jl")
 include("TTE.jl")
+include("bootstrap_patients.jl")
+include("MRD_hat.jl")
 
 end
