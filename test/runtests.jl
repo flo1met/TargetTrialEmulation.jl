@@ -14,7 +14,15 @@ test_df = CSV.read("../data/data_censored_sequential.csv", DataFrame)
 df = CSV.read("../data/data_censored.csv", DataFrame)
 
 df[!, :x1] = CategoricalVector(df.x1)
+df[!, :x2] = Vector{Float64}(df.x2)
 df[!, :x3] = CategoricalVector(df.x3)
+df[!, :x4] = Vector{Float64}(df.x4)
+df[!, :age] = Vector{Int64}(df.age)
+df[!, :outcome] = Vector{Int64}(df.outcome)
+df[!, :treatment] = Vector{Int64}(df.treatment)
+df[!, :period] = Vector{Int64}(df.period)
+df[!, :eligible] = Vector{Int64}(df.eligible)
+df[!, :censored] = Vector{Int64}(df.censored)
 
 out_df = seqtrial(df, [:x1, :x2, :x3, :x4, :age])
 
@@ -56,18 +64,27 @@ end
 # test censoring models
 
 ## test agaisnt weight vector
-df_out, model_num, model_denom = IPCW(df, [:x1, :x2, :x3, :x4, :age], true)
 
-df_out, model, model_num, model_denom = TTE(df, 
-    outcome = :outcome, 
-    treatment = :treatment, 
-    period = :period, 
-    eligible = :eligible, 
-    ipcw = true,
-    censored = :censored,
-    covariates = [:x1, :x2, :x3, :x4, :age], 
-    save_w_model = true
-    )
+# test if weights are the same
+## test with TTE function
+
+df = CSV.read("../data/data_censored.csv", DataFrame)
+
+out_df, model_num, model_denom = TTE(df, 
+outcome = :outcome, 
+treatment = :treatment, 
+period = :period, 
+eligible = :eligible, 
+ipcw = true,
+censored = :censored,
+covariates = [:x1, :x2, :x3, :x4, :age], 
+save_w_model = true
+)
+
+@testset "IPCW" begin
+    @test isapprox(test_df.weight, out_df.IPCW, atol = 0.0001)
+end
+
 
 
 
@@ -76,21 +93,22 @@ df_out, model, model_num, model_denom = TTE(df,
 ## define colum types in the begining of the test
 ## copy x3 as num and treat as num 
 @testset "Variable Type" begin
-    @test typeof(df_out.x1_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
-    @test typeof(df_out.x2) == Vector{Float64}
-    @test typeof(df_out.x3) == CategoricalArray
-    @test typeof(df_out.x4) == Vector
-    @test typeof(df_out.age) == Vector
-    @test typeof(df_out.outcome) == Vector
-    @test typeof(df_out.treatment) == Vector
-    @test typeof(df_out.period) == Vector
-    @test typeof(df_out.eligible) == Vector
-    @test typeof(df_out.censored) == Vector
-    @test typeof(df_out.w) == Vector
-    @test typeof(df_out.w_model) == Vector
-    @test typeof(model) == GLM.GeneralizedLinearModel
-    @test typeof(model_num) == GLM.GeneralizedLinearModel
-    @test typeof(model_denom) == GLM.GeneralizedLinearModel
+    @test typeof(out_df.x1) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x1_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x2) == Vector{Float64}
+    @test typeof(out_df.x2_first) == Vector{Float64}
+    @test typeof(out_df.x3) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x3_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x4) == Vector{Float64}
+    @test typeof(out_df.x4_first) == Vector{Float64}
+    @test typeof(out_df.age) == Vector{Int64}
+    @test typeof(out_df.age_first) == Vector{Int64}
+    @test typeof(out_df.outcome) == Vector{Int64}
+    @test typeof(out_df.treatment) == Vector{Int64}
+    @test typeof(out_df.treatment_first) == Vector{Int64}
+    @test typeof(out_df.period) == Vector{Int64}
+    @test typeof(out_df.eligible) == Vector{Int64}
+    @test typeof(out_df.censored) == Vector{Int64}
 end
 
 ####### TODO: 

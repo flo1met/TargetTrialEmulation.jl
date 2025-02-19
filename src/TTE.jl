@@ -39,6 +39,7 @@ This is a wrapper function to emulates target trials using the sequential trial 
 
 """
 function TTE(df::DataFrame;
+    id_var::Symbol,
     outcome::Symbol,
     treatment::Symbol,
     period::Symbol,
@@ -88,7 +89,7 @@ function TTE(df::DataFrame;
     df = convert_to_arrow(df)
     ## emulate trials
     #df = dict_to_df(seqtrial(df, covariates))
-    df = seqtrial(df, covariates)
+    df = seqtrial(df, id_var, covariates)
 
 
     cat_name = ["$(cov)_first" for cov in cat_name] # add _first to each covariate
@@ -111,7 +112,7 @@ function TTE(df::DataFrame;
     if ipcw == true
         # set IPCW to 1 if fup == 0
         df[!, :IPCW] = ifelse.(df.fup .== 0, 1.0, df.IPCW)
-        df = combine(groupby(df, [:id, :trialnr]), All(), :IPCW => (x -> cumprod(x)) => :IPCW)
+        df = combine(groupby(df, [id_var, :trialnr]), All(), :IPCW => (x -> cumprod(x)) => :IPCW)
     end
     
     # convert categorical variables back to categorical

@@ -51,7 +51,7 @@ covariates = [:age]
 trials_dict = seqtrial(df, covariates)
 ```
 """
-function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
+function seqtrial(df::DataFrame, id_var::Symbol, covariates::Array{Symbol,1})
     # Check if covariate is categorical, if yes save name
     #cat_name = []
     #for cov_cat in covariates
@@ -65,9 +65,9 @@ function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
     
     for i in unique(df[!,:period])
         filt_tmp(eligible, period) = eligible == 1 && period == i # creates template for filtering
-        elig_tmp = filter([:eligible, :period] => filt_tmp, df).id
+        elig_tmp = filter([:eligible, :period] => filt_tmp, df)[!, id_var]
         filt_tmp2(id, period) = in(id, elig_tmp) && period >= i # filters all ids that are eligible at timepoint i and all following timepoints of them
-        trial_tmp = filter([:id, :period] => filt_tmp2, df)
+        trial_tmp = filter([id_var, :period] => filt_tmp2, df)
 
         if isempty(trial_tmp)
             continue  # Skip this iteration if no eligible data is found
@@ -78,11 +78,11 @@ function seqtrial(df::DataFrame, covariates::Array{Symbol,1})
         start_time = minimum(trial_tmp[!, :period]) # get start time
         trial_tmp[!, :fup] .= trial_tmp.period .- start_time # add follow-up-time
 
-        sort!(trial_tmp, [:id, :period]) # sort for treatment assignment
+        sort!(trial_tmp, [id_var, :period]) # sort for treatment assignment
 
         # Add indicator for baseline treatment assignment and baseline covariates by id
 
-        grouped_df = groupby(trial_tmp, :id)
+        grouped_df = groupby(trial_tmp, id_var)
 
         covtreat = vcat(covariates, :treatment) # add treatment to covariates
 

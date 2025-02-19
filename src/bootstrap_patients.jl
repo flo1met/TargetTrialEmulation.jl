@@ -9,49 +9,76 @@
 # 2. Add tests
 # 3. add ID identifier in TTE function
 
-function bootstrap_patients(df::DataFrame, B, id_var::Symbol)
-    #initialize MRD_B 
-    MRD_B = []
 
-    unique_ids = unique(df[!, id_var]) # get unique IDs
+```
+Function BS Patients
+```
+function bootstrap_sample(df::DataFrame, id_col::Symbol)
+    n = length(unique(df[!, id_col]))  # Number of unique IDs
+    df_bs = DataFrame(
+        bs_id = sample(unique(df[!, id_col]), n, replace=true),  # Sample IDs with replacement
+        ID_new = 1:n  # Assign new sequential IDs
+    )
 
-    n = length(unique_ids) # number of unique IDs -> n
+    # Merge bootstrap IDs with the original dataset
+    df_bootstrapped = innerjoin(df_bs, df, on=:bs_id => id_col)
 
-    for i in 1:B
-        
-        # todo: df_bs = df[shuffle(1:n), :] # sample n IDs with replacement ?
-        # todo: enhance code, annotate
-        df_bs = DataFrame() # initialize DF 
+    return df_bootstrapped
+end
 
-        df_bs.bs_id = sample(1:n, n, replace = true) # sample n IDs with replacement   
-        df_bs.ID_new .= 1:n # new IDs
+```
+Function BS Point Estimate and Confint
+```
+function BS_CI(df::DataFrame, B, id_var::Symbol, covariates::Array{Symbol,1})
+    # Estimate Point Estimate
+    df_run = copy(df)
+    df_new, out_model = TTE(df_run, 
+        id_var = id_var,
+        outcome = :outcome, 
+        treatment = :treatment, 
+        period = :period, 
+        eligible = :eligible, 
+        ipcw = true,
+        censored = :censored,
+        covariates = covariates, 
+        save_w_model = false
+    )
 
-        df_bs_expanded = DataFrame()
+    MRD_hat_PE = MRD_hat(df_new, id_var, out_model)
 
-        for (new_id, old_id) in zip(df_bs.ID_new, df_bs.bs_id)
-            df_subset = df[df.id .== old_id, :]
-            df_subset[!, :id_new] .= new_id
-            append!(df_bs_expanded, df_subset)
-        end
-        
-        # todo: save orig call, use this and set save_w_model = false
-        # todo: df_new = df_bs_expanded
-        
-        df_new, out_model = TTE(df_bs_expanded, 
+    # Bootstrap
+    ## Initialize dictionary of length of follow-up to store MRD_hat
+    BS = [[MRD] for MRD in MRD_hat_PE.MRD_hat]
+
+    ## BS loop
+    for i in 2:B
+        df_bs = bootstrap_sample(df, id_var)
+        df_new, out_model = TTE(df_bs, 
+            id_var = :ID_new,
             outcome = :outcome, 
             treatment = :treatment, 
             period = :period, 
             eligible = :eligible, 
             ipcw = true,
             censored = :censored,
-            covariates = [:x1, :x2, :x3, :x4, :age], 
+            covariates = covariates, 
             save_w_model = false
         )
 
-        push!(MRD_B, MRD_hat(df_new, out_model))
+        MRD_hat_BS = MRD_hat(df_new, :ID_new, out_model)
+        
+        ## Append MRD_hat_BS to BS
+        for i in 1:length(MRD_hat_BS.MRD_hat)
+            append!(BS[i], MRD_hat_BS.MRD_hat[i])
+        end
     end
 
-    CI = [2*mean(MRD_B) - quantile(MRD_B, 0.975), 2*mean(MRD_B) - quantile(MRD_B, 0.025)]
+    
+    
 
-    return CI   
+    # Calculate CI
+    MRD_hat_PE.CIlow .= 2 .* MRD_hat_PE.MRD_hat .- map(x -> quantile(x, 0.975), BS)
+    MRD_hat_PE.CIhigh .= 2 .* MRD_hat_PE.MRD_hat .- map(x -> quantile(x, 0.025), BS)
+
+    return MRD_hat_PE
 end

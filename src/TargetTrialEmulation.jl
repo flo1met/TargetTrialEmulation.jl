@@ -26,7 +26,7 @@ export  art_censor,
         ITT,
         seqtrial,
         TTE,
-        bootstrap_patients,
+        BS_CI,
         MRD_hat
 
 # include
