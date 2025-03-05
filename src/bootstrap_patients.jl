@@ -29,56 +29,69 @@ end
 ```
 Function BS Point Estimate and Confint
 ```
-function BS_CI(df::DataFrame, B, id_var::Symbol, covariates::Array{Symbol,1})
-    # Estimate Point Estimate
-    df_run = copy(df)
-    df_new, out_model = TTE(df_run, 
-        id_var = id_var,
-        outcome = :outcome, 
-        treatment = :treatment, 
-        period = :period, 
-        eligible = :eligible, 
-        ipcw = true,
-        censored = :censored,
-        covariates = covariates, 
-        save_w_model = false
-    )
-
-    MRD_hat_PE = MRD_hat(df_new, id_var, out_model)
+function BS_CI(df::DataFrame, B::Int64, MRD_hat_PE, args)
+    id_var = args[:id_var]
+    failed_iterations = 0
 
     # Bootstrap
     ## Initialize dictionary of length of follow-up to store MRD_hat
-    BS = [[MRD] for MRD in MRD_hat_PE.MRD_hat]
+    BS = [[MRD] for MRD in MRD_hat_PE[!, :MRD_hat]]
 
     ## BS loop
-    for i in 2:B
-        df_bs = bootstrap_sample(df, id_var)
-        df_new, out_model = TTE(df_bs, 
-            id_var = :ID_new,
-            outcome = :outcome, 
-            treatment = :treatment, 
-            period = :period, 
-            eligible = :eligible, 
-            ipcw = true,
-            censored = :censored,
-            covariates = covariates, 
-            save_w_model = false
-        )
+    for i in 1:B
+        print("\rIteration: ", i, "/", B) # log iteration
+        flush(stdout)
 
-        MRD_hat_BS = MRD_hat(df_new, :ID_new, out_model)
-        
-        ## Append MRD_hat_BS to BS
-        for i in 1:length(MRD_hat_BS.MRD_hat)
-            append!(BS[i], MRD_hat_BS.MRD_hat[i])
+        try
+            df_bs = bootstrap_sample(df, id_var)
+            args[:id_var] = :ID_new # overwrite id_var with new ID
+            df_new, out_model = ITT(df_bs; args...)
+
+            # get highest followup time
+            max_fup = maximum(df_new[!, :fup])
+            df_est = newdata(df_new, max_fup)
+
+            MRD_hat_BS = MRD_hat(df_est, :ID_new, out_model)
+
+            ## Append MRD_hat_BS to BS
+            ### Save length of vector for each follow-up time? To see the "real amount" of BS samples
+            for i in 1:length(MRD_hat_BS.MRD_hat)
+                append!(BS[i], MRD_hat_BS.MRD_hat[i])
+            end
+
+        catch e
+            failed_iterations += 1
+            @warn "Bootstrap iteration $i failed with error: $e"
         end
+
     end
+        
+        if failed_iterations > 0
+            @warn "$failed_iterations out of $B bootstrap iterations failed. For more informations see the warning messages."
+        end
+
 
     
     
 
     # Calculate CI
-    MRD_hat_PE.CIlow .= 2 .* MRD_hat_PE.MRD_hat .- map(x -> quantile(x, 0.975), BS)
-    MRD_hat_PE.CIhigh .= 2 .* MRD_hat_PE.MRD_hat .- map(x -> quantile(x, 0.025), BS)
+    MRD_hat_PE.CIlow_emp .= 2 .* MRD_hat_PE.MRD_hat .- map(x -> quantile(x, 0.975), BS)
+    MRD_hat_PE.CIhigh_emp .= 2 .* MRD_hat_PE.MRD_hat .- map(x -> quantile(x, 0.025), BS)
+    MRD_hat_PE.BS_PE = map(x -> mean(x), BS)
+    MRD_hat_PE.CIlow_pct .= map(x -> quantile(x, 0.025), BS)
+    MRD_hat_PE.CIhigh_pct .= map(x -> quantile(x, 0.975), BS)
+    #MRD_hat_PE.CI = confint(BS[1], BCaConfInt(0.95)) # BCa CI for first follow-up time
+
 
     return MRD_hat_PE
+end
+
+
+
+
+```
+Bias Corrected and Accelerated Confidence Intervals
+```
+function BCa(df::DataFrame, B::Int64, MRD_hat_PE, args)
+    
 end

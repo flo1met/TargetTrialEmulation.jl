@@ -24,7 +24,7 @@ df[!, :period] = Vector{Int64}(df.period)
 df[!, :eligible] = Vector{Int64}(df.eligible)
 df[!, :censored] = Vector{Int64}(df.censored)
 
-out_df = seqtrial(df, [:x1, :x2, :x3, :x4, :age])
+out_df = seqtrial(df, :id, [:x1, :x2, :x3, :x4, :age])
 
 #sort the dfs
 out_df = sort(out_df, [:id, :trialnr])
@@ -71,6 +71,7 @@ end
 df = CSV.read("../data/data_censored.csv", DataFrame)
 
 out_df, model_num, model_denom = TTE(df, 
+id_var = :id,
 outcome = :outcome, 
 treatment = :treatment, 
 period = :period, 
@@ -93,12 +94,12 @@ end
 ## define colum types in the begining of the test
 ## copy x3 as num and treat as num 
 @testset "Variable Type" begin
-    @test typeof(out_df.x1) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
-    @test typeof(out_df.x1_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x1) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x1_first) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
     @test typeof(out_df.x2) == Vector{Float64}
     @test typeof(out_df.x2_first) == Vector{Float64}
-    @test typeof(out_df.x3) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
-    @test typeof(out_df.x3_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x3) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x3_first) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
     @test typeof(out_df.x4) == Vector{Float64}
     @test typeof(out_df.x4_first) == Vector{Float64}
     @test typeof(out_df.age) == Vector{Int64}

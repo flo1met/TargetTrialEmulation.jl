@@ -48,8 +48,11 @@ function TTE(df::DataFrame;
     censored::Union{Symbol,Nothing} = nothing,
     covariates::Array{Symbol,1},
     #model::String,
-    #method::String,
-    save_w_model::Bool = false)
+    method::String = "ITT",
+    save_w_model::Bool = false,
+    fill_missing_timepoints::Bool = false,
+    estimate_surv::Bool = true,
+    B::Int = 500)
 
     # rename columns to standard names
     if isnothing(censored)
@@ -65,77 +68,56 @@ function TTE(df::DataFrame;
                 censored => :censored)
     end
 
+    # save function arguments
+    args = Dict(
+        :id_var => id_var,
+        :outcome => outcome,
+        :treatment => treatment,
+        :period => period,
+        :eligible => eligible,
+        :ipcw => ipcw,
+        :censored => censored,
+        :covariates => covariates,
+        :save_w_model => save_w_model
+    )
+
+    ## test if there are missing timepoints
+    if fill_missing_timepoints == true
+        error("Filling missing timepoints is not implemented yet.")
+    elseif fill_missing_timepoints == false
+        group = groupby(df, :id)
+        for g in group
+            if has_gap(Vector(g[!, :period]))
+                error("There are missing timepoints, which leads to an incorrect computation of the (cumulative survival probability (?)). \n
+                Please make sure that there are no missing timepoints. \n
+                For using a last observation carried forward approach, please use the argument 'fill_missing_timepoints'.")
+            end
+        end
+    end
+
+    # copy df
+    df_run = copy(df)
+
     # apply weighting
-    if ipcw == true
+    if method == "ITT"
         if save_w_model == true
-            df, model_num, model_denom = IPCW(df, covariates, save_w_model)
+            df_out, out_model, model_num, model_denom = ITT(df_run; args...)
         else
-            df = IPCW(df, covariates)
+            df_out, out_model = ITT(df_run; args...)
         end
+    elseif method == "PP"
+        error("PP not implemented yet.")
     end
 
-    
-
-    # Emulate Trials
-    cat_name = []
-    for cov_cat in covariates
-        if isa(df[!, cov_cat], CategoricalArray)
-            push!(cat_name, cov_cat)
-        end
-    end
-
-
-    ## convert to arrow
-    df = convert_to_arrow(df)
-    ## emulate trials
-    #df = dict_to_df(seqtrial(df, covariates))
-    df = seqtrial(df, id_var, covariates)
-
-
-    cat_name = ["$(cov)_first" for cov in cat_name] # add _first to each covariate
-    if !isempty(cat_name)
-        for cov_cat in cat_name
-            df[!, cov_cat] = CategoricalArray(df[!, cov_cat])
-        end
+    if estimate_surv
+        # get highest followup time
+        max_fup = maximum(df_out[!, :fup])
+        data_est = newdata(df_out, max_fup)
+        
+        MRD_hat_PE = MRD_hat(data_est, id_var, out_model)
+        MRD_hat_CI = BS_CI(df, B, MRD_hat_PE, args)
     end
     
-    ## cumulative product of IPCW per id and trialnr
-    #####QUICKFIX FOR KEEPING CATEGORICAL 
-    # Check if covariate is categorical, if yes save name
-    #cat_name_new = []
-    #for covv in covariates
-    #    if isa(df[!, covv], CategoricalArray)
-    #        push!(cat_name_new, covv)
-    #    end
-    #end
-
-    if ipcw == true
-        # set IPCW to 1 if fup == 0
-        df[!, :IPCW] = ifelse.(df.fup .== 0, 1.0, df.IPCW)
-        df = combine(groupby(df, [id_var, :trialnr]), All(), :IPCW => (x -> cumprod(x)) => :IPCW)
-    end
-    
-    # convert categorical variables back to categorical
-    #if !isnothing(cat_name_new)
-    #    for covvv in cat_name_new
-    #        df[!, covvv] = CategoricalArray(df[!, covvv])
-    #    end
-    #end
-
-    #### QUICKFIX END
-
-    ## outcome model (ALWAYS ADJUST FOR COVARIATES)
-    # create formula string
-    # add _first to each covariate
-    covariates = ["$(cov)_first" for cov in covariates]
-    formula_string = "outcome ~ treatment_first + $(join(covariates, " + ")) + trialnr + (trialnr^2) + fup + (fup^2)"
-
-    # fit model
-    if ipcw == true
-        out_model = glm(eval(Meta.parse("@formula $formula_string")), df, Binomial(), LogitLink(), wts = df.IPCW)
-    else
-        out_model = glm(eval(Meta.parse("@formula $formula_string")), df, Binomial(), LogitLink())        
-    end
     
 
 
@@ -145,8 +127,12 @@ function TTE(df::DataFrame;
     #            :period => period, 
     #            :eligible => eligible)
 
-    if save_w_model == true
+    if save_w_model == true && estimate_surv == true
+        return df_out, out_model, model_num, model_denom, MRD_hat_CI
+    elseif save_w_model == true && estimate_surv == false
         return df, out_model, model_num, model_denom
+    elseif save_w_model == false && estimate_surv == true
+        return df_out, out_model, MRD_hat_CI
     else
         return df, out_model
     end

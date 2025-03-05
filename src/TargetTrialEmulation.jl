@@ -40,5 +40,6 @@ include("seqtrial.jl")
 include("TTE.jl")
 include("bootstrap_patients.jl")
 include("MRD_hat.jl")
+include("utils.jl")
 
 end

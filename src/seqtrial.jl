@@ -86,7 +86,7 @@ function seqtrial(df::DataFrame, id_var::Symbol, covariates::Array{Symbol,1})
 
         covtreat = vcat(covariates, :treatment) # add treatment to covariates
 
-        transform!(grouped_df, covtreat .=> first)
+        transform!(grouped_df, covtreat .=> first) # baseline covariates and treatment for each ID in each trial (creates cov_first)
 
         trials_dict[i] = trial_tmp
     end
