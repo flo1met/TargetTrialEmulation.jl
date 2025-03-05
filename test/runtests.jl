@@ -13,9 +13,9 @@ using CategoricalArrays
 test_df = CSV.read("../data/data_censored_sequential.csv", DataFrame)
 df = CSV.read("../data/data_censored.csv", DataFrame)
 
-df[!, :x1] = CategoricalVector(df.x1)
+df[!, :x1] = categorical(df.x1)
 df[!, :x2] = Vector{Float64}(df.x2)
-df[!, :x3] = CategoricalVector(df.x3)
+df[!, :x3] = categorical(df.x3)
 df[!, :x4] = Vector{Float64}(df.x4)
 df[!, :age] = Vector{Int64}(df.age)
 df[!, :outcome] = Vector{Int64}(df.outcome)
@@ -70,20 +70,21 @@ end
 
 df = CSV.read("../data/data_censored.csv", DataFrame)
 
-out_df, model_num, model_denom = TTE(df, 
-id_var = :id,
-outcome = :outcome, 
-treatment = :treatment, 
-period = :period, 
-eligible = :eligible, 
-ipcw = true,
-censored = :censored,
-covariates = [:x1, :x2, :x3, :x4, :age], 
-save_w_model = true
+out_df_wts, out_model = TTE(df, 
+    id_var = :id,
+    outcome = :outcome, 
+    treatment = :treatment, 
+    period = :period, 
+    eligible = :eligible, 
+    ipcw = true,
+    censored = :censored,
+    covariates = [:x1, :x2, :x3, :x4, :age], 
+    save_w_model = false,
+    estimate_surv = false
 )
 
 @testset "IPCW" begin
-    @test isapprox(test_df.weight, out_df.IPCW, atol = 0.0001)
+    @test isapprox(test_df.weight, out_df_wts.IPCW, atol = 0.0001)
 end
 
 
@@ -94,12 +95,12 @@ end
 ## define colum types in the begining of the test
 ## copy x3 as num and treat as num 
 @testset "Variable Type" begin
-    @test typeof(out_df.x1) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
-    @test typeof(out_df.x1_first) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test out_df.x1 isa CategoricalVector{Int64}
+    @test out_df.x1_first isa CategoricalVector{Int64}
     @test typeof(out_df.x2) == Vector{Float64}
     @test typeof(out_df.x2_first) == Vector{Float64}
-    @test typeof(out_df.x3) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
-    @test typeof(out_df.x3_first) == CategoricalVector{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x3) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
+    @test typeof(out_df.x3_first) == CategoricalArray{Int64, 1, UInt32, Int64, CategoricalValue{Int64, UInt32}, Union{}}
     @test typeof(out_df.x4) == Vector{Float64}
     @test typeof(out_df.x4_first) == Vector{Float64}
     @test typeof(out_df.age) == Vector{Int64}

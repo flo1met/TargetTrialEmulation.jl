@@ -134,7 +134,7 @@ function TTE(df::DataFrame;
     elseif save_w_model == false && estimate_surv == true
         return df_out, out_model, MRD_hat_CI
     else
-        return df, out_model
+        return df_out, out_model
     end
 end
 
