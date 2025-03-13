@@ -27,7 +27,8 @@ export  art_censor,
         seqtrial,
         TTE,
         BS_CI,
-        MRD_hat
+        MRD_hat,
+        bootstrap_sample
 
 # include
 include("art_censor.jl")

@@ -52,7 +52,8 @@ function TTE(df::DataFrame;
     save_w_model::Bool = false,
     fill_missing_timepoints::Bool = false,
     estimate_surv::Bool = true,
-    B::Int = 500)
+    B::Int = 500,
+    use_arrow = false)
 
     # rename columns to standard names
     if isnothing(censored)
@@ -78,7 +79,8 @@ function TTE(df::DataFrame;
         :ipcw => ipcw,
         :censored => censored,
         :covariates => covariates,
-        :save_w_model => save_w_model
+        :save_w_model => save_w_model,
+        :use_arrow => use_arrow
     )
 
     ## test if there are missing timepoints
@@ -98,6 +100,9 @@ function TTE(df::DataFrame;
     # copy df
     df_run = copy(df)
 
+    # Order by ID and period to ensure the loop is going through the data correctly
+    sort!(df, [id_var, :period]) 
+
     # apply weighting
     if method == "ITT"
         if save_w_model == true
@@ -109,12 +114,8 @@ function TTE(df::DataFrame;
         error("PP not implemented yet.")
     end
 
-    if estimate_surv
-        # get highest followup time
-        max_fup = maximum(df_out[!, :fup])
-        data_est = newdata(df_out, max_fup)
-        
-        MRD_hat_PE = MRD_hat(data_est, id_var, out_model)
+    if estimate_surv        
+        MRD_hat_PE = MRD_hat(df_out, id_var, out_model)
         MRD_hat_CI = BS_CI(df, B, MRD_hat_PE, args)
     end
     

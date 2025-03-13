@@ -13,15 +13,15 @@
 ```
 Function BS Patients
 ```
-function bootstrap_sample(df::DataFrame, id_col::Symbol)
-    n = length(unique(df[!, id_col]))  # Number of unique IDs
+function bootstrap_sample(df::DataFrame, id_var::Symbol)
+    n = length(unique(df[!, id_var]))  # Number of unique IDs
     df_bs = DataFrame(
-        bs_id = sample(unique(df[!, id_col]), n, replace=true),  # Sample IDs with replacement
+        bs_id = sample(unique(df[!, id_var]), n, replace=true),  # Sample IDs with replacement
         ID_new = 1:n  # Assign new sequential IDs
     )
 
     # Merge bootstrap IDs with the original dataset
-    df_bootstrapped = innerjoin(df_bs, df, on=:bs_id => id_col)
+    df_bootstrapped = innerjoin(df_bs, df, on=:bs_id => id_var)
 
     return df_bootstrapped
 end
@@ -34,7 +34,7 @@ function BS_CI(df::DataFrame, B::Int64, MRD_hat_PE, args)
     failed_iterations = 0
 
     # Bootstrap
-    ## Initialize dictionary of length of follow-up to store MRD_hat
+    ## Initialize list of vectors of length of follow-up to store MRD_hat
     BS = [[MRD] for MRD in MRD_hat_PE[!, :MRD_hat]]
 
     ## BS loop
@@ -47,11 +47,7 @@ function BS_CI(df::DataFrame, B::Int64, MRD_hat_PE, args)
             args[:id_var] = :ID_new # overwrite id_var with new ID
             df_new, out_model = ITT(df_bs; args...)
 
-            # get highest followup time
-            max_fup = maximum(df_new[!, :fup])
-            df_est = newdata(df_new, max_fup)
-
-            MRD_hat_BS = MRD_hat(df_est, :ID_new, out_model)
+            MRD_hat_BS = MRD_hat(df_new, :ID_new, out_model)
 
             ## Append MRD_hat_BS to BS
             ### Save length of vector for each follow-up time? To see the "real amount" of BS samples

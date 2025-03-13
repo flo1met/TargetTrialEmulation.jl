@@ -33,7 +33,8 @@ function ITT(df::DataFrame;
     censored::Union{Symbol,Nothing} = nothing,
     covariates::Array{Symbol,1},
     #model::String,
-    save_w_model::Bool = false)
+    save_w_model::Bool = false,
+    use_arrow = false)
 
     # apply weighting
     if ipcw == true
@@ -52,8 +53,13 @@ function ITT(df::DataFrame;
         end
     end
 
+    
+
     ## convert to arrow
-    df = convert_to_arrow(df)
+    if use_arrow == true
+        df = convert_to_arrow(df, id_var)
+    end
+
     ## emulate trials
     df = seqtrial(df, id_var, covariates)
 
