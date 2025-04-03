@@ -57,16 +57,17 @@ function TTE(df::DataFrame;
 
     # rename columns to standard names
     if isnothing(censored)
-        rename!(df, outcome => :outcome, 
-                treatment => :treatment, 
-                period => :period, 
-                eligible => :eligible)
+        rename!(df, 
+        outcome => :outcome,
+        treatment => :treatment, 
+        period => :period, 
+        eligible => :eligible)
     else
         rename!(df, outcome => :outcome, 
-                treatment => :treatment, 
-                period => :period, 
-                eligible => :eligible,
-                censored => :censored)
+        treatment => :treatment, 
+        period => :period, 
+        eligible => :eligible,
+        censored => :censored)
     end
 
     # save function arguments
@@ -87,7 +88,7 @@ function TTE(df::DataFrame;
     if fill_missing_timepoints == true
         error("Filling missing timepoints is not implemented yet.")
     elseif fill_missing_timepoints == false
-        group = groupby(df, :id)
+        group = groupby(df, id_var)
         for g in group
             if has_gap(Vector(g[!, :period]))
                 error("There are missing timepoints, which leads to an incorrect computation of the (cumulative survival probability (?)). \n
@@ -123,10 +124,19 @@ function TTE(df::DataFrame;
 
 
     # rerename columns for final output
-    #rename!(df, :outcome => outcome, 
-    #            :treatment => treatment, 
-    #            :period => period, 
-    #            :eligible => eligible)
+    if isnothing(censored)
+        rename!(df, 
+        :outcome => outcome,
+        :treatment => treatment, 
+        :period => period, 
+        :eligible => eligible)
+    else
+        rename!(df, :outcome => outcome, 
+                :treatment => treatment, 
+                :period => period, 
+                :eligible => eligible)
+    end
+    
 
     if save_w_model == true && estimate_surv == true
         return df_out, out_model, model_num, model_denom, MRD_hat_CI
