@@ -34,7 +34,8 @@ function ITT(df::DataFrame;
     covariates::Array{Symbol,1},
     #model::String,
     save_w_model::Bool = false,
-    use_arrow = false)
+    use_arrow = false,
+    save_BS = false)
 
     # apply weighting
     if ipcw == true

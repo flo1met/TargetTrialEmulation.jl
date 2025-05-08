@@ -31,6 +31,7 @@ Function BS Point Estimate and Confint
 ```
 function BS_CI(df::DataFrame, B::Int64, MRD_hat_PE, args)
     id_var = args[:id_var]
+    save_BS = args[:save_BS]
     failed_iterations = 0
 
     # Bootstrap
@@ -79,7 +80,7 @@ function BS_CI(df::DataFrame, B::Int64, MRD_hat_PE, args)
     #MRD_hat_PE.CI = confint(BS[1], BCaConfInt(0.95)) # BCa CI for first follow-up time
 
     if save_BS == true
-        returnMRD_hat_PE, BS
+        return MRD_hat_PE, BS
     else
         return MRD_hat_PE
     end
