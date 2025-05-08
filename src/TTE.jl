@@ -53,7 +53,8 @@ function TTE(df::DataFrame;
     fill_missing_timepoints::Bool = false,
     estimate_surv::Bool = true,
     B::Int = 500,
-    use_arrow = false)
+    use_arrow = false,
+    save_BS = false)
 
     # rename columns to standard names
     if isnothing(censored)
@@ -81,7 +82,8 @@ function TTE(df::DataFrame;
         :censored => censored,
         :covariates => covariates,
         :save_w_model => save_w_model,
-        :use_arrow => use_arrow
+        :use_arrow => use_arrow,
+        :save_BS => save_BS
     )
 
     ## test if there are missing timepoints
@@ -115,9 +117,14 @@ function TTE(df::DataFrame;
         error("PP not implemented yet.")
     end
 
-    if estimate_surv        
-        MRD_hat_PE = MRD_hat(df_out, id_var, out_model)
-        MRD_hat_CI = BS_CI(df, B, MRD_hat_PE, args)
+    if estimate_surv       
+        if save_BS == true
+            MRD_hat_PE = MRD_hat(df_out, id_var, out_model)
+            MRD_hat_CI, BS = BS_CI(df, B, MRD_hat_PE, args)
+        else
+            MRD_hat_PE = MRD_hat(df_out, id_var, out_model)
+            MRD_hat_CI = BS_CI(df, B, MRD_hat_PE, args)
+        end
     end
     
     
@@ -138,12 +145,16 @@ function TTE(df::DataFrame;
     end
     
 
-    if save_w_model == true && estimate_surv == true
+    if save_w_model == true && estimate_surv == true && save_BS == false
         return df_out, out_model, model_num, model_denom, MRD_hat_CI
+    elseif save_w_model == true && estimate_surv == true && save_BS == true
+        return df_out, out_model, model_num, model_denom, MRD_hat_CI, BS
     elseif save_w_model == true && estimate_surv == false
         return df, out_model, model_num, model_denom
-    elseif save_w_model == false && estimate_surv == true
+    elseif save_w_model == false && estimate_surv == true && save_BS == false
         return df_out, out_model, MRD_hat_CI
+    elseif save_w_model == false && estimate_surv == true && save_BS == true
+        return df_out, out_model, MRD_hat_CI, BS
     else
         return df_out, out_model
     end

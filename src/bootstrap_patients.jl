@@ -78,10 +78,12 @@ function BS_CI(df::DataFrame, B::Int64, MRD_hat_PE, args)
     MRD_hat_PE.CIhigh_pct .= map(x -> quantile(x, 0.975), BS)
     #MRD_hat_PE.CI = confint(BS[1], BCaConfInt(0.95)) # BCa CI for first follow-up time
 
-
-    return MRD_hat_PE
+    if save_BS == true
+        returnMRD_hat_PE, BS
+    else
+        return MRD_hat_PE
+    end
 end
-
 
 
 
