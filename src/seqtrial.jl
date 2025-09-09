@@ -4,7 +4,6 @@
 #### necessary packages
 # Arrow, DataFrames, CategoricalArrays
 
-## todo: make it a ! function
 ## todo: integrate censoring function before making final df
 ## todo: assigned treatment variable
 
@@ -59,6 +58,9 @@ function seqtrial(df::DataFrame, id_var::Symbol, covariates::Array{Symbol,1})
     #        push!(cat_name, cov_cat)
     #    end
     #end
+
+
+    # estimand argument
 
     # Emulate Target Trials
     trials_dict = Dict{Int64, DataFrame}() # Create dict to save DFs

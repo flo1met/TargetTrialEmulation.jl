@@ -1,29 +1,4 @@
-"""
-    ITT(df::DataFrame)
-
-Estimate intention-to-treat effect.
-
-# Keyword Arguments
-
-- `df::DataFrame`: DataFrame with columns `:id`, `:period`, `:eligible`, `:treatment`.
-
-# Output
-
-- `model`: GLM model.
-
-# Example
-
-"""
-
-#### ITT: estimate intetion-to-treat effect
-
-# necessary packages
-#
-
-## todo
-# - add example (when the function is ready and example DF is created)
-
-function ITT(df::DataFrame;
+function PP(df::DataFrame;
     id_var::Symbol,
     outcome::Symbol,
     treatment::Symbol,
@@ -37,17 +12,8 @@ function ITT(df::DataFrame;
     use_arrow = false,
     save_BS = false)
 
-    # apply weighting
-    if ipcw == true
-        if save_w_model == true
-            df, model_num, model_denom = IPCW(df, covariates, save_w_model)
-        else
-            df = IPCW(df, covariates)
-        end
-    end
 
-    # Emulate Trials
-    ## not ITT dependent
+    #Emulate Trials
     cat_name = []
     for cov_cat in covariates
         if isa(df[!, cov_cat], CategoricalArray)
@@ -55,16 +21,13 @@ function ITT(df::DataFrame;
         end
     end
 
-    
-
     ## convert to arrow
-    ### where to put most efficiently and readable
     if use_arrow == true
         df = convert_to_arrow(df, id_var)
     end
 
     ## emulate trials
-    df = seqtrial(df, id_var, covariates) 
+    df = seqtrial(df, id_var, covariates)
 
 
     cat_name = ["$(cov)_first" for cov in cat_name] # add _first to each categorical covariate
@@ -74,11 +37,26 @@ function ITT(df::DataFrame;
         end
     end
 
+    ### Emulate Trials End
+
+
+    # Artificial censoring # what happens to censor variable?
+    df = art_censor(df)
+
+    # apply weighting
+    if save_w_model == true
+        df, model_num, model_denom = IPCW(df, covariates, save_w_model)
+    else
+        df = IPCW(df, covariates)
+    end
+
     if ipcw == true
         # set IPCW to 1 if fup == 0
         df[!, :IPCW] = ifelse.(df.fup .== 0, 1.0, df.IPCW)
         df = combine(groupby(df, [id_var, :trialnr]), All(), :IPCW => (x -> cumprod(x)) => :IPCW)
     end
+
+    #artIPCW
 
     ## outcome model (ALWAYS ADJUST FOR COVARIATES)
     # create formula string
@@ -98,5 +76,7 @@ function ITT(df::DataFrame;
     else
         return df, out_model
     end
+
+
 
 end

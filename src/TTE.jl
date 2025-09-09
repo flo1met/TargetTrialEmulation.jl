@@ -53,8 +53,8 @@ function TTE(df::DataFrame;
     fill_missing_timepoints::Bool = false,
     estimate_surv::Bool = true,
     B::Int = 500,
-    use_arrow = false,
-    save_BS = false)
+    use_arrow::Bool = false,
+    save_BS::Bool = false)
 
     # rename columns to standard names
     if isnothing(censored)
@@ -100,13 +100,16 @@ function TTE(df::DataFrame;
         end
     end
 
-    # copy df
-    df_run = copy(df)
+    
 
     # Order by ID and period to ensure the loop is going through the data correctly
     sort!(df, [id_var, :period]) 
 
+    # copy df
+    df_run = copy(df)
+
     # apply weighting
+    ## always output w models (put option in the end)
     if method == "ITT"
         if save_w_model == true
             df_out, out_model, model_num, model_denom = ITT(df_run; args...)
@@ -114,7 +117,11 @@ function TTE(df::DataFrame;
             df_out, out_model = ITT(df_run; args...)
         end
     elseif method == "PP"
-        error("PP not implemented yet.")
+        if save_w_model == true
+            df_out, out_model, model_num, model_denom = PP(df_run; args...)
+        else
+            df_out, out_model = PP(df_run; args...)
+        end
     end
 
     if estimate_surv       

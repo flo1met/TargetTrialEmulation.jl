@@ -24,6 +24,7 @@ export  art_censor,
         IPCW,
         IPTW,
         ITT,
+        PP,
         seqtrial,
         TTE,
         BS_CI,
@@ -37,6 +38,7 @@ include("dict_to_df.jl")
 include("IPCW.jl")
 include("IPTW.jl")
 include("ITT.jl")
+include("PP.jl")
 include("seqtrial.jl")
 include("TTE.jl")
 include("bootstrap_patients.jl")

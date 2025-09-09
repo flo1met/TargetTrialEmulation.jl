@@ -3,9 +3,8 @@
 # necessary packages:
 # GLM, StatsModels, DataFrames, Distributions
 
-## todo: make it a ! function
 ## generalize formula creation
-## filtering for eligible subjects: simmerschool yes, trialEMulation no: what to do, option?
+## filtering for eligible subjects: summerschool yes, trialEMulation no: what to do, option?
 
 function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = false)
     # initialise IPW column
@@ -14,21 +13,23 @@ function IPCW(df::DataFrame, covariates::Array{Symbol,1}, save_w_model::Bool = f
     # filter/dont filter for eligible subjects
     #df_eligible = filter(row -> row.eligible == 1, df)
     #df_eligible = filter(row -> row.outcome == 0, df)
-    df_eligible = df
+    #df_eligible = df
 
     # create formula string
     formula_string_d = "censored == 0 ~ $(join(covariates, " + ")) + period + (period^2)"
 
     # fit model
-    model_num = glm(@formula(censored == 0 ~ period + (period^2)), df_eligible, Binomial(), LogitLink())
-    model_denom = glm(eval(Meta.parse("@formula $formula_string_d")), df_eligible, Binomial(), LogitLink())
+    model_num = glm(@formula(censored == 0 ~ period + (period^2)), df, Binomial(), LogitLink())
+    model_denom = glm(eval(Meta.parse("@formula $formula_string_d")), df, Binomial(), LogitLink())
     
     prd_num = predict(model_num, df)
     prd_denom = predict(model_denom, df)
 
     # calculate inverse propensity weights with ifelse
-    #df[!, :IPCW] .= Float64.(ifelse.(df.censored .== 0, (prd_num ./ prd_denom), 0))
     df[!, :IPCW] .= (prd_num ./ prd_denom)
+
+    # return weights instead of DF
+
 
     # truncate weights at 99th percentile
     #df[!, :IPW] = ifelse.(df.IPW .> quantile(df.IPW, 0.99), quantile(df.IPW, 0.99), df.IPW)
